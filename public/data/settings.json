@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Giulia Morettin"
+  },
+  {
+    "id": 2,
+    "name": "Silvio Berlusconi"
+  },
+  {
+    "id": 3,
+    "name": "Fabio Fazzio"
+  },
+  {
+    "id": 7,
+    "name": "Luciana Litizzetto"
+  }
+]

@@ -1,24 +1,20 @@
 'use client';
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { useState, useEffect, ChangeEvent } from 'react';
+import axios from 'axios';
+import { Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, TextField, Button, Stack, AppBar, CssBaseline, Link, Toolbar, Typography, Snackbar, IconButton } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MuiAlert from '@mui/material/Alert';
+import React from 'react';
 
-interface Dipendente {
-  codice: number;
-  nome: string;
+interface Employee {
+  id: number;
+  name: string;
+}
+
+interface Info {
+  isError: boolean;
+  message: string;
 }
 
 const darkTheme = createTheme({
@@ -27,63 +23,80 @@ const darkTheme = createTheme({
   },
 });
 
-export default function Settings() {
-  const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
+const Settings: React.FC = () => {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [newEmployeeName, setNewEmployeeName] = useState<string>('');
+  const [info, setInfo] = useState<Info | null>(null);
 
-  // Carica i dati dal file JSON quando il componente si monta
+  const fetchData = async () => {
+    try {
+      const response = await axios.get<Employee[]>('/api/settings');
+      setEmployees(response.data);
+    } catch (error) {
+      setInfo({ isError: true, message: 'Error fetching data' });
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-        try {
-          const response = await fetch('/public/data/settings.json');
-          const data: Dipendente[] = await response.json();
-          setDipendenti(data);
-        } catch (error) {
-          console.error('Errore nel caricare i dati:', error);
-        }}
-
-    loadData();
+    fetchData();
   }, []);
 
-  // Salva i dati in un file JSON ogni volta che 'dipendenti' cambia
-  useEffect(() => {
-    const saveData = async () => {
-        try {
-          const response = await fetch('/api/settings', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dipendenti),
-          });
-      
-          if (!response.ok) {
-            throw new Error(`Errore nella richiesta: ${response.status} - ${response.statusText}`);
-          }
-        } catch (error) {
-          console.error('Errore nel salvare i dati:', error);
-        }
-      };
-
-    saveData();
-  }, [dipendenti]);
-
-  const handleNameChange = (codice: number, nome: string) => {
-    // Trova l'indice del dipendente con il codice specificato
-    const index = dipendenti.findIndex((d) => d.codice === codice);
-
-    // Aggiorna il nome del dipendente
-    const updatedDipendenti = [...dipendenti];
-    updatedDipendenti[index] = { ...updatedDipendenti[index], nome };
-
-    // Aggiorna lo stato
-    setDipendenti(updatedDipendenti);
+  const handleAddEmployee = async () => {
+    try {
+      const response = await axios.post('/api/settings', { name: newEmployeeName });
+      setEmployees([...employees, { id: response.data.id, name: newEmployeeName }]);
+      setNewEmployeeName('');
+      setInfo({ isError: false, message: 'Employee added successfully' });
+    } catch (error) {
+      setInfo({ isError: true, message: 'Error adding employee' });
+    }
   };
+
+  const handleSaveChanges = async () => {
+    try {
+      const updatedEmployeeData = employees.map((employee) => ({ id: employee.id, name: employee.name }));
+      await axios.put('/api/settings', updatedEmployeeData);
+      setEmployees(updatedEmployeeData);
+      setInfo({ isError: false, message: 'Changes saved successfully' });
+    } catch (error) {
+      setInfo({ isError: true, message: 'Error saving changes' });
+    }
+  };
+
+  const handleDeleteEmployee = async (id: number) => {
+    try {
+      await axios.delete(`/api/settings?id=${id}`);
+      setEmployees(employees.filter((employee) => employee.id !== id));
+      setInfo({ isError: false, message: 'Employee deleted successfully' });
+    } catch (error) {
+      setInfo({ isError: true, message: 'Error deleting employee' });
+    }
+  };
+
+  const handleNameChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const updatedEmployees = [...employees];
+    updatedEmployees[index].name = event.target.value;
+    setEmployees(updatedEmployees);
+    setInfo({ isError: false, message: 'Employee modified successfully' });
+  };
+
+  const handleIdChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const updatedEmployees = [...employees];
+    updatedEmployees[index].id = parseInt(event.target.value, 10);
+    setEmployees(updatedEmployees);
+    setInfo({ isError: false, message: 'Employee modified successfully' });
+  };
+
+  const handleCloseSnackbar = () => {
+    setInfo(null);
+  };
+
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column'}}>
         <CssBaseline />
-        <AppBar component="nav">
+        <AppBar component="nav" >
           <Toolbar>
             <Typography
               variant="h6"
@@ -93,37 +106,81 @@ export default function Settings() {
               Al Naturale - Convertitore di Timbrature
             </Typography>
             <Box>
-              <Button key={'Account'} sx={{ color: '#fff' }} onClick={undefined}>
-                <SettingsIcon />
-              </Button>
+              <Link href="/">
+                <Button key={'Account'} sx={{ color: '#fff' }} >
+                  <SettingsIcon />
+                </Button>
+              </Link>
             </Box>
           </Toolbar>
         </AppBar>
         <Toolbar />
-          <Box sx={{ padding: 2 }}>
-            <TableContainer>
+        <Stack>
+          <Box mt={3} p={3} bgcolor="background.paper" borderRadius={8} boxShadow={3}>
+            <TableContainer component={Paper}>
               <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="left">Codice</TableCell>
+                    <TableCell align="left">Nome</TableCell>
+                    <TableCell align="left">Azioni</TableCell> {/* Aggiunto il titolo per l'ultima colonna */}
+                  </TableRow>
+                </TableHead>
                 <TableBody>
-                  {Array.from({ length: 99 }, (_, index) => {
-                    const codice = index + 1;
-                    const nome = dipendenti.find((d) => d.codice === codice)?.nome || '';
-                    return (
-                      <TableRow key={codice}>
-                        <TableCell>{codice}</TableCell>
-                        <TableCell>
-                          <TextField
-                            value={nome}
-                            onChange={(e) => handleNameChange(codice, e.target.value)}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {employees.map((employee, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <TextField
+                          type="text"
+                          value={employee.id}
+                          onChange={(e) => handleIdChange(index, e as React.ChangeEvent<HTMLInputElement>)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="text"
+                          value={employee.name}
+                          onChange={(e) => handleNameChange(index, e as React.ChangeEvent<HTMLInputElement>)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="contained" color="secondary" onClick={() => handleDeleteEmployee(employee.id)}>
+                          Elimina
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button variant="contained" onClick={handleAddEmployee}>
+                Aggiungi Dipendente
+              </Button>
+              <Button variant="contained" sx={{ backgroundColor: 'darkorange' }} onClick={handleSaveChanges}>
+                Salva Modifiche
+              </Button>
+            </Box>
           </Box>
+        </Stack>
       </Box>
+      <Snackbar
+          open={info !== null}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          action={undefined}
+        >
+          <MuiAlert
+            variant="filled"
+            severity={info?.isError ? 'error' : 'success'}
+            onClose={handleCloseSnackbar}
+          >
+            {info?.message}
+          </MuiAlert>
+        </Snackbar>
     </ThemeProvider>
   );
-}
+};
+
+
+export default Settings;
