@@ -24,7 +24,7 @@ export default class TimbraturaParser {
     }
 
     let [codiceDipendente, tipoOperazioneCode, data, ora, minuti] = match.slice(1);
-    const tipoOperazione = tipoOperazioneCode === '00000' ? 'Entrata' : 'Uscita';
+    const tipoOperazione = tipoOperazioneCode === '00000' ? 'Uscita' : 'Entrata';
 
     // Arrotondamento al quarto d'ora
     let roundedMinutes = Math.round(parseInt(minuti) / 15) * 15;
