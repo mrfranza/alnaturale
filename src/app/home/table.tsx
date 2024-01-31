@@ -97,6 +97,8 @@ export default function TablePrint({ timbrature }: TableProps) {
     });
   };
 
+  const uniqueCodiciDipendente = Array.from(new Set(timbrature.map(row => row.codiceDipendente)));
+
   return (
     <Paper
       elevation={3}
@@ -117,16 +119,19 @@ export default function TablePrint({ timbrature }: TableProps) {
           value={userFilter}
           onChange={(e) => setUserFilter(e.target.value as string)}
         >
-          <MenuItem data-value={null}>Tutti gli utenti</MenuItem>
-          {/* Aggiungi gli utenti dalla tabella */}
-          {timbrature.map(row => <MenuItem value={row.codiceDipendente}>{row.codiceDipendente}</MenuItem>)}
+          {/* Aggiungi gli utenti dalla tabella senza duplicati */}
+          {uniqueCodiciDipendente.map((codiceDipendente) => (
+            <MenuItem key={codiceDipendente} value={codiceDipendente}>
+              {codiceDipendente}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
 
       <Button
         variant="contained"
         color="primary"
-        style={{ marginTop: '10px' }}
+        style={{ marginTop: '10px', marginBottom: '20px' }}
         onClick={() => {
           updateFilteredRows();
         }}
