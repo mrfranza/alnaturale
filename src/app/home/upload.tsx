@@ -38,59 +38,57 @@ const Upload = ({ setTimbrature, }: UploadProps) => {
   const handleTextFieldChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFileContent = event.target.value;
     setFileContent(newFileContent);
-  
+
     const parsedTimbrature = await TimbraturaParser.parseFileContent(newFileContent);
     setTimbrature(parsedTimbrature);
   };
 
   return (
-    <Grid item xs={12} sm={5} m={1} >
-      <Paper
-        elevation={3}
+    <Paper
+      elevation={3}
+      style={{
+        padding: '20px',
+        height: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
+        textAlign: 'center',
+        borderRadius: '15px',
+      }}
+    >
+      <Box
+        {...getRootProps()}
         style={{
-          padding: '20px',
-          height: '80vh',
+          width: '100%',
+          height: '10vh',
+          border: '1px grey dashed',
+          borderRadius: 10,
           display: 'flex',
           flexDirection: 'column',
-          textAlign: 'center',
-          borderRadius: '15px',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
+        mx="auto"
+        my={2}
       >
-        <Box
-          {...getRootProps()}
-          style={{
-            width: '100%',
-            height: '10vh',
-            border: '1px grey dashed',
-            borderRadius: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          mx="auto"
-          my={2}
-        >
-          <CloudUploadIcon style={{ fontSize: 34, marginTop: '10px' }} />
-          <Typography variant="body2" color="textSecondary" m={1}>
-            Rilascia qui il file di testo o clicca per selezionare un file (.txt)
-          </Typography>
-        </Box>
-        <input {...getInputProps()} />
-        <TextField
-          label="Inserisci i codici manualmente..."
-          fullWidth
-          variant="outlined"
-          multiline
-          rows={10}
-          placeholder="Inserisci il testo qui..."
-          style={{ marginTop: '20px' }}
-          value={fileContent}
-          autoFocus
-          onChange={handleTextFieldChange}
-        />
-      </Paper>
-    </Grid>
+        <CloudUploadIcon style={{ fontSize: 34, marginTop: '10px' }} />
+        <Typography variant="body2" color="textSecondary" m={1}>
+          Rilascia qui il file di testo o clicca per selezionare un file (.txt)
+        </Typography>
+      </Box>
+      <input {...getInputProps()} />
+      <TextField
+        label="Inserisci i codici manualmente..."
+        fullWidth
+        variant="outlined"
+        multiline
+        rows={10}
+        placeholder="Inserisci il testo qui..."
+        style={{ marginTop: '20px' }}
+        value={fileContent}
+        autoFocus
+        onChange={handleTextFieldChange}
+      />
+    </Paper>
   );
 }
 

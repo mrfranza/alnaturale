@@ -52,9 +52,13 @@ export default function Home() {
             </AppBar>
           <Toolbar />
           <Stack>
-              <Grid container spacing={2} height={'95vh'}>
-                <Upload setTimbrature={setTimbrature} />
-                <TablePrint timbrature={timbrature}/>
+              <Grid container spacing={2} my={'auto'} height={'95vh'}>
+                <Grid item xs={5.8} mx={'auto'} >
+                  <Upload setTimbrature={setTimbrature} />
+                </Grid>
+                <Grid item xs={5.8} mx={'auto'} >
+                  <TablePrint timbrature={timbrature}/>
+                </Grid>                  
               </Grid>
           </Stack>
         </Box>
